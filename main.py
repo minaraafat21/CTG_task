@@ -43,28 +43,35 @@ class MyWindow(QMainWindow):
 
     def update_plot(self):
         if self.plot_data_index + self.window_size <= len(self.timestamps):
-            time_window = self.timestamps[self.plot_data_index:
-                                          self.plot_data_index + self.window_size]
-            fhr_window = self.fhr[self.plot_data_index:
-                                  self.plot_data_index + self.window_size]
-            uc_window = self.uc[self.plot_data_index:
-                                self.plot_data_index + self.window_size]
+            # Define the time window
+            time_window = self.timestamps[self.plot_data_index:self.plot_data_index + self.window_size]
+            fhr_window = self.fhr[self.plot_data_index:self.plot_data_index + self.window_size]
+            uc_window = self.uc[self.plot_data_index:self.plot_data_index + self.window_size]
 
+            # Clear previous plots
             self.FHR_graph.clear()
             self.UC_grah.clear()
 
+            # Plot new data
             self.FHR_graph.plot(time_window, fhr_window, pen='r')
             self.UC_grah.plot(time_window, uc_window, pen='g')
 
+            # Update the index for the next plot
             self.plot_data_index += 1
 
-            self.FHR_graph.setXRange(
-                self.timestamps[self.plot_data_index], self.timestamps[self.plot_data_index + self.window_size])
-            self.UC_grah.setXRange(
-                self.timestamps[self.plot_data_index], self.timestamps[self.plot_data_index + self.window_size])
+            # Ensure that the X range does not exceed the length of the data
+            if self.plot_data_index + self.window_size <= len(self.timestamps):
+                self.FHR_graph.setXRange(self.timestamps[self.plot_data_index], self.timestamps[self.plot_data_index + self.window_size])
+                self.UC_grah.setXRange(self.timestamps[self.plot_data_index], self.timestamps[self.plot_data_index + self.window_size])
+            else:
+                # Handle the case when the index exceeds the available data range
+                self.FHR_graph.setXRange(self.timestamps[self.plot_data_index], self.timestamps[-1])
+                self.UC_grah.setXRange(self.timestamps[self.plot_data_index], self.timestamps[-1])
 
         else:
+            # Reset the index to 0 when we reach the end of the data
             self.plot_data_index = 0
+
 
 
 if __name__ == '__main__':
