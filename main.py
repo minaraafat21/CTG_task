@@ -24,6 +24,8 @@ class MyWindow(QMainWindow):
         self.FHR_label.setText('FHR: 150 bpm')
         self.CTG_label.setText('CTG Interpretation: Normal')
 
+        ## el btn esmo start_btn
+
         self.load_and_plot_data('1001.csv')
 
     def load_and_plot_data(self, filename):
