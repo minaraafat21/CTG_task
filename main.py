@@ -2,6 +2,7 @@ import pandas as pd
 import pyqtgraph as pg
 from PyQt5 import uic
 from PyQt5.QtWidgets import QApplication, QMainWindow
+from PyQt5.QtCore import QTimer
 
 
 class MyWindow(QMainWindow):
@@ -20,24 +21,43 @@ class MyWindow(QMainWindow):
         self.UC_grah.setLabel('bottom', 'Time', units='s')
         self.UC_grah.setTitle('UC Graph')
 
-        # Set the initial text on the labels
         self.FHR_label.setText('FHR: 150 bpm')
         self.CTG_label.setText('CTG Interpretation: Normal')
 
-        ## el btn esmo start_btn
+        self.data = pd.read_csv('1001.csv')
+        self.timestamps = self.data['timestamp'].values
+        self.fhr = self.data['fhr'].values
+        self.uc = self.data['uc'].values
 
-        self.load_and_plot_data('1001.csv')
+        self.window_size = 30
+        self.plot_range = self.timestamps[:self.window_size]
+        self.plot_data_index = 0
 
-    def load_and_plot_data(self, filename):
-        data = pd.read_csv(filename)
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.update_plot)
+        self.timer.start(100)
 
-        timestamps = data['timestamp'].values
-        fhr = data['fhr'].values
-        uc = data['uc'].values
+        # el btn esmo start_btn
 
-        self.FHR_graph.plot(timestamps, fhr, pen='r')  # Red line for FHR
+    def update_plot(self):
+        if self.plot_data_index + self.window_size <= len(self.timestamps):
+            time_window = self.timestamps[self.plot_data_index:self.plot_data_index + self.window_size]
+            fhr_window = self.fhr[self.plot_data_index:self.plot_data_index + self.window_size]
+            uc_window = self.uc[self.plot_data_index:self.plot_data_index + self.window_size]
 
-        self.UC_grah.plot(timestamps, uc, pen='g')  # Green line for UC
+            self.FHR_graph.clear()
+            self.UC_grah.clear()
+
+            self.FHR_graph.plot(time_window, fhr_window, pen='r')
+            self.UC_grah.plot(time_window, uc_window, pen='g')
+
+            self.plot_data_index += 1
+
+            self.FHR_graph.setXRange(self.timestamps[self.plot_data_index], self.timestamps[self.plot_data_index + self.window_size])
+            self.UC_grah.setXRange(self.timestamps[self.plot_data_index], self.timestamps[self.plot_data_index + self.window_size])
+
+        else:
+            self.plot_data_index = 0
 
 
 if __name__ == '__main__':
