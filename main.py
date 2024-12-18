@@ -39,11 +39,16 @@ class MyWindow(QMainWindow):
 
         # el btn esmo start_btn
 
+        # self.Load_btn
+
     def update_plot(self):
         if self.plot_data_index + self.window_size <= len(self.timestamps):
-            time_window = self.timestamps[self.plot_data_index:self.plot_data_index + self.window_size]
-            fhr_window = self.fhr[self.plot_data_index:self.plot_data_index + self.window_size]
-            uc_window = self.uc[self.plot_data_index:self.plot_data_index + self.window_size]
+            time_window = self.timestamps[self.plot_data_index:
+                                          self.plot_data_index + self.window_size]
+            fhr_window = self.fhr[self.plot_data_index:
+                                  self.plot_data_index + self.window_size]
+            uc_window = self.uc[self.plot_data_index:
+                                self.plot_data_index + self.window_size]
 
             self.FHR_graph.clear()
             self.UC_grah.clear()
@@ -53,8 +58,10 @@ class MyWindow(QMainWindow):
 
             self.plot_data_index += 1
 
-            self.FHR_graph.setXRange(self.timestamps[self.plot_data_index], self.timestamps[self.plot_data_index + self.window_size])
-            self.UC_grah.setXRange(self.timestamps[self.plot_data_index], self.timestamps[self.plot_data_index + self.window_size])
+            self.FHR_graph.setXRange(
+                self.timestamps[self.plot_data_index], self.timestamps[self.plot_data_index + self.window_size])
+            self.UC_grah.setXRange(
+                self.timestamps[self.plot_data_index], self.timestamps[self.plot_data_index + self.window_size])
 
         else:
             self.plot_data_index = 0
