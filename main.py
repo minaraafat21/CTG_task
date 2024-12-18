@@ -60,6 +60,8 @@ class MyWindow(QMainWindow):
             except Exception as e:
                 print(f"Error loading CSV file: {e}")
 
+        # self.Load_btn
+
     def update_plot(self):
         if self.plot_data_index + self.window_size <= len(self.timestamps):
             time_window = self.timestamps[self.plot_data_index:self.plot_data_index + self.window_size]
