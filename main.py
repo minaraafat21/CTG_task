@@ -65,8 +65,9 @@ class MyWindow(QMainWindow):
 
     # Data filtrign 
     def denoise_data(self):
-        self.fhr -= np.random.normal(0, 1, size=len(self.fhr))
-        self.uc -= np.random.normal(0, 1, size=len(self.uc))
+        filter = np.random.normal(0, 0.5, size=len(self.fhr))
+        self.fhr -= filter
+        self.uc -= filter
 
     def update_plot(self):
         self.denoise_data()
