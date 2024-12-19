@@ -52,8 +52,8 @@ class MyWindow(QMainWindow):
             try:
                 self.data = pd.read_csv(file_path)
                 self.timestamps = self.data['timestamp'].values
-                self.fhr = self.data['fhr'].values
-                self.uc = self.data['uc'].values
+                self.fhr = self.remove_outliers(self.data['fhr'].values)
+                self.uc = self.remove_outliers(self.data['uc'].values)                
                 # Reset plot data index to start from the beginning
                 self.plot_data_index = 0
                 self.CTG_label.setText('')
@@ -64,6 +64,14 @@ class MyWindow(QMainWindow):
                 print(f"Error loading CSV file: {e}")
 
         # self.Load_btn
+    def remove_outliers(self, arr):
+        q1 = np.percentile(arr, 25)
+        q3 = np.percentile(arr, 75)
+        iqr = q3 - q1
+        lower_bound = q1 - 1.5 + iqr
+        upper_bound = q3 + 1.5 + iqr
+        arr = np.clip(arr, lower_bound, upper_bound)
+        return arr
 
     # # Data filtrign
     # def denoise_data(self):
