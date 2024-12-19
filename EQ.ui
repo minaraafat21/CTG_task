@@ -215,14 +215,14 @@
                <item row="0" column="1">
                 <widget class="QLabel" name="CTG_label">
                  <property name="text">
-                  <string>CTG Interpretation: Normal</string>
+                  <string></string>
                  </property>
                 </widget>
                </item>
                <item row="0" column="0">
                 <widget class="QLabel" name="FHR_label">
                  <property name="text">
-                  <string>FHR: 120 BPM</string>
+                  <string></string>
                  </property>
                 </widget>
                </item>
