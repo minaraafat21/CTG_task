@@ -4,6 +4,7 @@ from PyQt5 import uic
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog
 from PyQt5.QtCore import QTimer
 import numpy as np
+from scipy.signal import butter, lfilter
 
 
 class MyWindow(QMainWindow):
@@ -38,41 +39,57 @@ class MyWindow(QMainWindow):
         self.timer.start(100)
 
         self.pushButton.clicked.connect(self.detect_hr)
+        self.pushButton.clicked.connect(self.detect_variability)
         self.pushButton_2.clicked.connect(self.load_csv_file)
 
     def load_csv_file(self):
         """ Opens file dialog to load a CSV file dynamically. """
-        file_path, _ = QFileDialog.getOpenFileName(self, "Open CSV File", "", "CSV Files (*.csv);;All Files (*)")
-        
+        file_path, _ = QFileDialog.getOpenFileName(
+            self, "Open CSV File", "", "CSV Files (*.csv);;All Files (*)")
+
         if file_path:
             # Read the selected CSV file
             try:
                 self.data = pd.read_csv(file_path)
                 self.timestamps = self.data['timestamp'].values
                 self.fhr = self.data['fhr'].values
-                self.uc = self.data['uc'].values                
+                self.uc = self.data['uc'].values
                 # Reset plot data index to start from the beginning
                 self.plot_data_index = 0
                 self.CTG_label.setText('')
                 self.FHR_label.setText(f"")
+                self.variability_label.setText('')
                 self.update_plot()
             except Exception as e:
                 print(f"Error loading CSV file: {e}")
 
         # self.Load_btn
 
-    # Data filtrign 
-    def denoise_data(self):
-        filter = np.random.normal(0, 0.5, size=len(self.fhr))
-        self.fhr -= filter
-        self.uc -= filter
+    # # Data filtrign
+    # def denoise_data(self):
+    #     filter = np.random.normal(0, 0.5, size=len(self.fhr))
+    #     self.fhr -= filter
+    #     self.uc -= filter
+
+    def low_pass_filter(self, signal, order=8):
+        fs = 4
+        cutoff = 0.5
+        nyquist = 0.5 * fs
+        normal_cutoff = cutoff / nyquist
+        b, a = butter(order, normal_cutoff, btype='low', analog=False)
+        return lfilter(b, a, signal)
 
     def update_plot(self):
-        self.denoise_data()
+        # self.denoise_data()
+        # self.fhr = self.low_pass_filter(self.fhr)
+        # self.uc = self.low_pass_filter(self.uc)
         if self.plot_data_index + self.window_size <= len(self.timestamps):
-            time_window = self.timestamps[self.plot_data_index:self.plot_data_index + self.window_size]
-            fhr_window = self.fhr[self.plot_data_index:self.plot_data_index + self.window_size]
-            uc_window = self.uc[self.plot_data_index:self.plot_data_index + self.window_size]
+            time_window = self.timestamps[self.plot_data_index:
+                                          self.plot_data_index + self.window_size]
+            fhr_window = self.fhr[self.plot_data_index:
+                                  self.plot_data_index + self.window_size]
+            uc_window = self.uc[self.plot_data_index:
+                                self.plot_data_index + self.window_size]
 
             # Clear previous plots
             self.FHR_graph.clear()
@@ -91,8 +108,10 @@ class MyWindow(QMainWindow):
                 end_index = len(self.timestamps)
 
             # Set the X range
-            self.FHR_graph.setXRange(self.timestamps[self.plot_data_index], self.timestamps[end_index - 1])
-            self.UC_grah.setXRange(self.timestamps[self.plot_data_index], self.timestamps[end_index - 1])
+            self.FHR_graph.setXRange(
+                self.timestamps[self.plot_data_index], self.timestamps[end_index - 1])
+            self.UC_grah.setXRange(
+                self.timestamps[self.plot_data_index], self.timestamps[end_index - 1])
 
         else:
             # If we're at the end of the data, reset the index to 0 to loop
@@ -107,6 +126,22 @@ class MyWindow(QMainWindow):
             self.CTG_label.setText("CTG Interpretation: Bradycardia")
         else:
             self.CTG_label.setText('CTG Interpretation: Normal')
+
+    def detect_variability(self):
+        max_FHR = np.max(self.fhr)
+        min_FHR = np.min(self.fhr)
+        diff = max_FHR - min_FHR
+        if diff <= 2:
+            self.variability_label.setText("FHR Variability: No Variability")
+        elif diff <= 4 and diff > 3:
+            self.variability_label.setText(
+                "FHR Variability: Minimal Variability")
+        elif diff <= 25 and diff > 11:
+            self.variability_label.setText(
+                "FHR Variability: Moderate Variability")
+        elif diff > 25:
+            self.variability_label.setText(
+                "FHR Variability: Marked Variability")
 
 
 if __name__ == '__main__':
