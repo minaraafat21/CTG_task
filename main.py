@@ -9,7 +9,7 @@ import numpy as np
 class MyWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        uic.loadUi('CTG_task/EQ.ui', self)
+        uic.loadUi('EQ.ui', self)
         self.resize(1000, 500)
 
         # Initialize graphs and labels
@@ -22,9 +22,6 @@ class MyWindow(QMainWindow):
         self.UC_grah.setLabel('left', 'UC')
         self.UC_grah.setLabel('bottom', 'Time', units='s')
         self.UC_grah.setTitle('UC Graph')
-
-        self.FHR_label.setText('FHR: 150 bpm')
-        self.CTG_label.setText('CTG Interpretation: Normal')
 
         # Initialize data variables
         self.timestamps = []
@@ -40,7 +37,7 @@ class MyWindow(QMainWindow):
         self.timer.timeout.connect(self.update_plot)
         self.timer.start(100)
 
-        # Load file button (you'll link this button from the UI)
+        self.pushButton.clicked.connect(self.detect_hr)
         self.pushButton_2.clicked.connect(self.load_csv_file)
 
     def load_csv_file(self):
@@ -53,10 +50,11 @@ class MyWindow(QMainWindow):
                 self.data = pd.read_csv(file_path)
                 self.timestamps = self.data['timestamp'].values
                 self.fhr = self.data['fhr'].values
-                self.uc = self.data['uc'].values
-
+                self.uc = self.data['uc'].values                
                 # Reset plot data index to start from the beginning
                 self.plot_data_index = 0
+                self.CTG_label.setText('')
+                self.FHR_label.setText(f"")
                 self.update_plot()
             except Exception as e:
                 print(f"Error loading CSV file: {e}")
@@ -99,6 +97,15 @@ class MyWindow(QMainWindow):
             # If we're at the end of the data, reset the index to 0 to loop
             self.plot_data_index = 0
 
+    def detect_hr(self):
+        rms = np.sqrt(np.mean(np.square(self.fhr)))
+        self.FHR_label.setText(f"FHR: {round(rms, 2)} BPM")
+        if rms > 160:
+            self.CTG_label.setText("CTG Interpretation: Tachycardia")
+        elif rms < 110:
+            self.CTG_label.setText("CTG Interpretation: Bradycardia")
+        else:
+            self.CTG_label.setText('CTG Interpretation: Normal')
 
 
 if __name__ == '__main__':
