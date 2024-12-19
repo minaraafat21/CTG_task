@@ -40,7 +40,7 @@ class MyWindow(QMainWindow):
         self.timer.start(100)
 
         # Load file button (you'll link this button from the UI)
-        self.load_button.clicked.connect(self.load_csv_file)
+        self.pushButton_2.clicked.connect(self.load_csv_file)
 
     def load_csv_file(self):
         """ Opens file dialog to load a CSV file dynamically. """
@@ -63,6 +63,7 @@ class MyWindow(QMainWindow):
         # self.Load_btn
 
     def update_plot(self):
+        # Ensure we do not exceed the bounds of the data
         if self.plot_data_index + self.window_size <= len(self.timestamps):
             time_window = self.timestamps[self.plot_data_index:self.plot_data_index + self.window_size]
             fhr_window = self.fhr[self.plot_data_index:self.plot_data_index + self.window_size]
@@ -79,16 +80,19 @@ class MyWindow(QMainWindow):
             # Update the plot index for the next window
             self.plot_data_index += 1
 
-            # Ensure that the X range does not exceed the length of the data
-            if self.plot_data_index + self.window_size <= len(self.timestamps):
-                self.FHR_graph.setXRange(self.timestamps[self.plot_data_index], self.timestamps[self.plot_data_index + self.window_size])
-                self.UC_grah.setXRange(self.timestamps[self.plot_data_index], self.timestamps[self.plot_data_index + self.window_size])
-            else:
-                self.FHR_graph.setXRange(self.timestamps[self.plot_data_index], self.timestamps[-1])
-                self.UC_grah.setXRange(self.timestamps[self.plot_data_index], self.timestamps[-1])
+            # Make sure the range does not go beyond the available data
+            end_index = self.plot_data_index + self.window_size
+            if end_index > len(self.timestamps):  # If we reach the end of the data
+                end_index = len(self.timestamps)
+
+            # Set the X range
+            self.FHR_graph.setXRange(self.timestamps[self.plot_data_index], self.timestamps[end_index - 1])
+            self.UC_grah.setXRange(self.timestamps[self.plot_data_index], self.timestamps[end_index - 1])
 
         else:
+            # If we're at the end of the data, reset the index to 0 to loop
             self.plot_data_index = 0
+
 
 
 if __name__ == '__main__':
