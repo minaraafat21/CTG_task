@@ -3,12 +3,13 @@ import pyqtgraph as pg
 from PyQt5 import uic
 from PyQt5.QtWidgets import QApplication, QMainWindow
 from PyQt5.QtCore import QTimer
+import numpy as np
 
 
 class MyWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        uic.loadUi('EQ.ui', self)
+        uic.loadUi('CTG_task/EQ.ui', self)
         self.resize(1000, 500)
 
         self.FHR_graph.showGrid(x=True, y=True)
@@ -24,7 +25,7 @@ class MyWindow(QMainWindow):
         self.FHR_label.setText('FHR: 150 bpm')
         self.CTG_label.setText('CTG Interpretation: Normal')
 
-        self.data = pd.read_csv('1001.csv')
+        self.data = pd.read_csv('CTG_task/noisy_data.csv')
         self.timestamps = self.data['timestamp'].values
         self.fhr = self.data['fhr'].values
         self.uc = self.data['uc'].values
@@ -39,7 +40,13 @@ class MyWindow(QMainWindow):
 
         # el btn esmo start_btn
 
+    # Data filtrign 
+    def denoise_data(self):
+        self.fhr -= np.random.normal(0, 1, size=len(self.fhr))
+        self.uc -= np.random.normal(0, 1, size=len(self.uc))
+
     def update_plot(self):
+        self.denoise_data()
         if self.plot_data_index + self.window_size <= len(self.timestamps):
             time_window = self.timestamps[self.plot_data_index:self.plot_data_index + self.window_size]
             fhr_window = self.fhr[self.plot_data_index:self.plot_data_index + self.window_size]
